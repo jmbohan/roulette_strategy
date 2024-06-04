@@ -2,68 +2,74 @@ import random
 import matplotlib.pyplot as plt
 
 def fibonacci_sequence(n):
-    fib_sequence = [0, 1]
+    fib_sequence = [1, 1]  # Start with [1, 1] to avoid zero bets
     for i in range(2, n):
         fib_sequence.append(fib_sequence[i-1] + fib_sequence[i-2])
     return fib_sequence
 
 def roulette_spin():
-    return random.randint(0, 36)
+    options = [-1, 0] + list(range(1, 37))
+    weights = [1, 1] + [2] * 36
+    return random.choices(options, weights=weights)[0]
 
 def play_roulette(fib_sequence, games):
     total_profit = 0
-    current_bet_index = 0
+    total_win = 0
     total_loss = 0
+    current_bet_index = 0
     balance_history = []
+    not_hit_count = 0
 
     for i in range(1, games + 1):
         current_bet = fib_sequence[current_bet_index]
-        total_bet = current_bet * 2  # Betting on two streets
+        total_bet = current_bet * 2
         profit = 0
 
         spin_result = roulette_spin()
 
-        if spin_result in range(1, 25):  # Winning spin
-            profit = total_bet * 2  # 2:1 payout
+        if spin_result in range(1, 25):
+            profit = total_bet * 2
             total_profit += profit
-            current_bet_index = 0  # Start over
+            total_win += total_bet
+            current_bet_index = 0
+            not_hit_count = 0
         else:
             total_loss += total_bet
-            if total_loss >= 1000:
-                break  # Quit if total loss reaches 1000 units
-            current_bet_index = (current_bet_index + 1) % len(fib_sequence)  # Move to next bet in Fibonacci sequence
+            not_hit_count += 1
+            if not_hit_count >= 15:
+                current_bet_index = (current_bet_index + 1) % len(fib_sequence)
 
-        if i % 10 == 0 or total_loss >= 1000:  # Record balance every 10 games or when reaching loss limit
-            balance_history.append((i * 10, total_profit - total_loss))  # Record the game number and balance
+            if total_loss >= 1000:
+                break
+
+        balance_history.append((i, total_profit - total_loss, total_win, total_loss))
 
     return balance_history
 
-fib_sequence = fibonacci_sequence(100)  # Generate Fibonacci sequence for up to 100 bets
+fib_sequence = fibonacci_sequence(100)
 games = 10000
 balance_history = play_roulette(fib_sequence, games)
 
-# Plot the balance history
 x_values = [x[0] for x in balance_history]
 y_values = [x[1] for x in balance_history]
 
-plt.plot(x_values, y_values)  # Plot the balance history
+plt.plot(x_values, y_values)
 plt.xlabel('Number of Games')
 plt.ylabel('Balance')
-plt.title('Balance over 10 Games')
+plt.title('Balance over Games')
 
-# Highlighting losses with red 'x' markers
-for x, y in balance_history:
+for x, y, _, _ in balance_history:
     if y < 0:
         plt.scatter(x, y, color='red', marker='x')
 
-plt.savefig('balance_plot.png')  # Save the plot as an image
+plt.savefig('balance_plot.png')
 plt.show()
 
-# Print the balance history to the console
 print("Balance History:")
-print(balance_history)
+print("Game Number\tTotal Win\tTotal Loss")
+for item in balance_history:
+    print("{:12}\t{:10}\t{:10}".format(item[0], item[2], item[3]))
 
-# Export the balance history to a text file
 with open('balance_history.txt', 'w') as f:
     for item in balance_history:
-        f.write("%s\n" % str(item))
+        f.write("{},{},{}\n".format(item[0], item[2], item[3]))
