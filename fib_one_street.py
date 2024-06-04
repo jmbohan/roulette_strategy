@@ -46,7 +46,7 @@ def play_roulette(fib_sequence, games):
     return balance_history
 
 fib_sequence = custom_fibonacci_sequence()
-games = 10000
+games = 1000
 balance_history = play_roulette(fib_sequence, games)
 
 # Plot the balance history
@@ -77,7 +77,7 @@ with open('balance_history.md', 'w') as f:
     f.write("| Hand Number | Total Win | Total Loss | Balance | Winning Number | Total Bet | Street 1 Bet | Win | Loss |\n")
     f.write("|-------------|-----------|------------|---------|----------------|-----------|--------------|-----|------|\n")
     for item in balance_history:
-        f.write("| {:11} | {:9} | {:10} | {:7} | {:14} | {:9} | {:12} | {:4} | {:4} |\n".format(item[0], item[2], item[3], item[1], item[4], item[5], item[6], item[7], item[8]))
+        f.write("{},{},{},{},{},{},{},{},{}\n".format(item[0], item[2], item[3], item[1], item[4], item[5], item[6], item[7], item[8]))
 
 # Export the balance history to a text file
 with open('balance_history.txt', 'w') as f:
