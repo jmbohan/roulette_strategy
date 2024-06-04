@@ -16,33 +16,50 @@ def play_roulette(fib_sequence, games):
     total_profit = 0
     total_win = 0
     total_loss = 0
-    current_bet_index = 0
+    street1_bet_index = 0
+    street2_bet_index = 0
+    zero_bet_index = 0
     balance_history = []
     not_hit_count = 0
+    zero_hit_count = 0
 
     for i in range(1, games + 1):
-        current_bet = fib_sequence[current_bet_index]
-        total_bet = current_bet * 2
+        street1_bet = fib_sequence[street1_bet_index]
+        street2_bet = fib_sequence[street2_bet_index]
+        zero_bet = fib_sequence[zero_bet_index] if zero_hit_count >= 15 else 0
+
+        total_bet = street1_bet + street2_bet + zero_bet
         profit = 0
 
         spin_result = roulette_spin()
 
-        if spin_result in range(1, 25):
-            profit = total_bet * 2
-            total_profit += profit
-            total_win += total_bet
-            current_bet_index = 0
-            not_hit_count = 0
-        else:
-            total_loss += total_bet
+        if spin_result in range(1, 13):  # Street 1 win
+            profit = street1_bet * 2
+            street1_bet_index = 0  # Reset the Fibonacci sequence for Street 1
+        elif spin_result in range(13, 25):  # Street 2 win
+            profit = street2_bet * 2
+            street2_bet_index = 0  # Reset the Fibonacci sequence for Street 2
+        elif spin_result == 0 or spin_result == -1:  # 0 or 00 win
+            profit = zero_bet * 35
+            zero_bet_index = 0  # Reset the Fibonacci sequence for 0/00
+            zero_hit_count = 0  # Reset the zero hit count
+        else:  # Loss
             not_hit_count += 1
-            if not_hit_count >= 15:
-                current_bet_index = (current_bet_index + 1) % len(fib_sequence)
+            if zero_bet > 0:
+                zero_hit_count += 1
+            street1_bet_index = (street1_bet_index + 1) % len(fib_sequence)
+            street2_bet_index = (street2_bet_index + 1) % len(fib_sequence)
+            if zero_hit_count >= 15:
+                zero_bet_index = (zero_bet_index + 1) % len(fib_sequence)
 
-            if total_loss >= 1000:
-                break
+        total_profit += profit - total_bet
+        total_win += profit
+        total_loss += total_bet
 
-        balance_history.append((i, total_profit - total_loss, total_win, total_loss, spin_result, total_bet))
+        balance_history.append((i, total_profit, total_win, total_loss, spin_result, total_bet))
+
+        if total_loss >= 1000:
+            break
 
     return balance_history
 
